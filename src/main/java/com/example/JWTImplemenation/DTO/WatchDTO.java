@@ -17,4 +17,6 @@ public class WatchDTO {
     private Integer price;
     private Date createdDate;
     private List<String> imageUrl;
+    private Integer appraisalId;
+    private Integer sellerId;
 }

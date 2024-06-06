@@ -36,7 +36,8 @@ public class User implements UserDetails {
     private boolean status;
     @Enumerated(EnumType.STRING)
     private Role role;
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Watch> watches;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

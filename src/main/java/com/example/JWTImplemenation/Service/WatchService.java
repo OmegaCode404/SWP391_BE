@@ -2,8 +2,10 @@ package com.example.JWTImplemenation.Service;
 
 import com.example.JWTImplemenation.DTO.WatchDTO;
 import com.example.JWTImplemenation.Entities.ImageUrl;
+import com.example.JWTImplemenation.Entities.User;
 import com.example.JWTImplemenation.Entities.Watch;
 import com.example.JWTImplemenation.Repository.IRespository.WatchRespository;
+import com.example.JWTImplemenation.Repository.UserRepository;
 import com.example.JWTImplemenation.Service.IService.IImageService;
 import com.example.JWTImplemenation.Service.IService.IWatchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,8 @@ public class WatchService implements IWatchService {
     private WatchRespository watchRepository;
     @Autowired
     private IImageService imageService;
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public ResponseEntity<List<WatchDTO>> findAll() {
@@ -38,9 +42,17 @@ public class WatchService implements IWatchService {
     }
 
     @Override
-    public ResponseEntity<WatchDTO> save(Watch watch) {
-        Watch savedWatch = watchRepository.save(watch);
-        return ResponseEntity.ok(convertToDTO(savedWatch));
+    public ResponseEntity<WatchDTO> save(Integer userId, Watch watch) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            watch.setStatus(true);
+            watch.setUser(user);
+            Watch savedWatch = watchRepository.save(watch);
+            return ResponseEntity.ok(convertToDTO(savedWatch));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Override
@@ -56,30 +68,37 @@ public class WatchService implements IWatchService {
 
     @Override
     public ResponseEntity<Void> deleteById(Integer id) {
-        if (watchRepository.existsById(id)) {
-            watchRepository.deleteById(id);
+        Optional<Watch> optionalWatch = watchRepository.findById(id);
+        if (optionalWatch.isPresent()) {
+            Watch watch = optionalWatch.get();
+            watch.setStatus(false); // Set status to false (0)
+            watchRepository.save(watch);
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
         }
     }
-
-    public ResponseEntity<WatchDTO> addImageToWatch(Integer watchId, MultipartFile imageFile) {
+    @Override
+    public ResponseEntity<WatchDTO> addImagesToWatch(Integer watchId, List<MultipartFile> imageFiles) {
         Optional<Watch> optionalWatch = watchRepository.findById(watchId);
         if (optionalWatch.isPresent()) {
             Watch watch = optionalWatch.get();
-            String imageUrl = imageService.uploadImage(imageFile);
-            if (imageUrl != null) {
-                ImageUrl image = new ImageUrl();
-                image.setImageUrl(imageUrl);
-                image.setWatch(watch);
-                if (watch.getImageUrl() == null) {
-                    watch.setImageUrl(new ArrayList<>());
+            List<ImageUrl> imageUrls = new ArrayList<>();
+            for (MultipartFile imageFile : imageFiles) {
+                String imageUrl = imageService.uploadImage(imageFile);
+                if (imageUrl != null) {
+                    ImageUrl image = new ImageUrl();
+                    image.setImageUrl(imageUrl);
+                    image.setWatch(watch);
+                    imageUrls.add(image);
                 }
-                watch.getImageUrl().add(image);
-                Watch updatedWatch = watchRepository.save(watch);
-                return ResponseEntity.ok(convertToDTO(updatedWatch));
             }
+            if (watch.getImageUrl() == null) {
+                watch.setImageUrl(new ArrayList<>());
+            }
+            watch.getImageUrl().addAll(imageUrls);
+            Watch updatedWatch = watchRepository.save(watch);
+            return ResponseEntity.ok(convertToDTO(updatedWatch));
         }
         return ResponseEntity.notFound().build();
     }
@@ -100,8 +119,13 @@ public class WatchService implements IWatchService {
                     .collect(Collectors.toList());
             watchDTO.setImageUrl(imageUrls);
         }
+        if (watch.getAppraisal() != null) {
+            watchDTO.setAppraisalId(watch.getAppraisal().getId());
+        }
+        watchDTO.setSellerId(watch.getUser().getId()); // Set sellerId
         return watchDTO;
     }
+
 
     private List<WatchDTO> convertToDTOList(List<Watch> watches) {
         return watches.stream().map(this::convertToDTO).collect(Collectors.toList());

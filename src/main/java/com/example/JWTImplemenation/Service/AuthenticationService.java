@@ -1,5 +1,6 @@
 package com.example.JWTImplemenation.Service;
 
+import com.example.JWTImplemenation.DTO.UserDTO;
 import com.example.JWTImplemenation.Response.AuthenticationResponse;
 import com.example.JWTImplemenation.DTO.AuthenticationRequest;
 import com.example.JWTImplemenation.DTO.RefreshTokenRequest;
@@ -26,12 +27,20 @@ public class AuthenticationService {
                 .firstName(request.getFirstname())
                 .lastName(request.getLastname())
                 .email(request.getEmail())
+                .address(request.getAddress())
+                .phone(request.getPhone())
+                .gender(request.getGender())
+                .status(true)
                 .password(PasswordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .build();
         userRepository.save(user);
-        var jwtToken=jwtService.generateToken(user);
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        var jwtToken = jwtService.generateToken(user);
+        var userDTO = convertToDTO(user);
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .user(userDTO)
+                .build();
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -40,11 +49,16 @@ public class AuthenticationService {
                         request.getEmail(),
                         request.getPassword()
                 )
-                );
-        var user=userRepository.findByEmail(request.getEmail()).orElseThrow();
-        var token=jwtService.generateToken(user);
-        var refreshToken=jwtService.generateRefreshToken(user);
-        return AuthenticationResponse.builder().token(token).refreshToken(refreshToken).build();
+        );
+        var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        var token = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
+        var userDTO = convertToDTO(user);
+        return AuthenticationResponse.builder()
+                .token(token)
+                .refreshToken(refreshToken)
+                .user(userDTO)
+                .build();
     }
 
     public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
@@ -52,12 +66,28 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(userEmail).orElseThrow();
         if (jwtService.isTokenValid(refreshTokenRequest.getToken(), user)) {
             var jwt = jwtService.generateToken(user);
-
-            AuthenticationResponse authenticationResponse = new AuthenticationResponse();
-            authenticationResponse.setToken(jwt);
-            authenticationResponse.setRefreshToken(refreshTokenRequest.getToken());
-            return authenticationResponse;
+            var userDTO = convertToDTO(user);
+            return AuthenticationResponse.builder()
+                    .token(jwt)
+                    .refreshToken(refreshTokenRequest.getToken())
+                    .user(userDTO)
+                    .build();
         }
         return null;
+    }
+    private UserDTO convertToDTO(User user) {
+        return UserDTO.builder()
+                .id(user.getId())
+                .password(user.getPassword())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .gender(user.getGender())
+                .avatarUrl(user.getAvatarUrl())
+                .address(user.getAddress())
+                .status(user.isStatus())
+                .role(user.getRole())
+                .build();
     }
 }

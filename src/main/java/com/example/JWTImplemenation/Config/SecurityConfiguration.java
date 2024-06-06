@@ -27,6 +27,9 @@ public class SecurityConfiguration{
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("api/v1/auth/**")
                     .permitAll()
+                    .requestMatchers("/api/v1/watch", "/api/v1/watch/{id}").permitAll()
+                    .requestMatchers("/api/v1/user", "/api/v1/user/{id}").permitAll()
+                    .requestMatchers("/api/v1/appraisal", "/api/v1/appraisal/{id}").permitAll()
                     .anyRequest().authenticated()
             ).authenticationProvider(authenticationProvider)
             .addFilterBefore(JwtAuthFilter, UsernamePasswordAuthenticationFilter.class );

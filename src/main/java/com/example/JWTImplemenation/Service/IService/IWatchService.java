@@ -11,9 +11,9 @@ public interface IWatchService {
     ResponseEntity<List<WatchDTO>> findAll();
      ResponseEntity<WatchDTO> findById(Integer id);
 
-    ResponseEntity<WatchDTO> save(Watch watch);
+    ResponseEntity<WatchDTO> save(Integer userId, Watch watch);
     ResponseEntity<WatchDTO> update(Integer id, Watch watch);
     ResponseEntity<Void> deleteById(Integer id);
-    ResponseEntity<WatchDTO> addImageToWatch(Integer watchId, MultipartFile imageFile);
+    ResponseEntity<WatchDTO> addImagesToWatch(Integer watchId, List<MultipartFile> imageFiles);
 
 }

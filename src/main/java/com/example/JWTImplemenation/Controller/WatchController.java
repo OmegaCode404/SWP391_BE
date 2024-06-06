@@ -29,9 +29,9 @@ public class WatchController {
         return iWatchService.findById(id);
     }
 
-    @PostMapping
-    public ResponseEntity<WatchDTO> createWatch(@RequestBody Watch watch) {
-        return iWatchService.save(watch);
+    @PostMapping("/user/{userId}")
+    public ResponseEntity<WatchDTO> createWatchForUser(@PathVariable Integer userId, @RequestBody Watch watch) {
+        return iWatchService.save(userId, watch);
     }
 
     @PutMapping("/{id}")
@@ -45,7 +45,7 @@ public class WatchController {
     }
 
     @PostMapping("/{watchId}/images")
-    public ResponseEntity<WatchDTO> addImageToWatch(@PathVariable Integer watchId, @RequestParam("imageFile") MultipartFile imageFile) {
-        return iWatchService.addImageToWatch(watchId, imageFile);
+    public ResponseEntity<WatchDTO> addImagesToWatch(@PathVariable Integer watchId, @RequestParam("imageFiles") List<MultipartFile> imageFiles) {
+        return iWatchService.addImagesToWatch(watchId, imageFiles);
     }
 }

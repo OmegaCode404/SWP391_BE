@@ -1,5 +1,8 @@
 package com.example.JWTImplemenation.DTO;
 
+import com.example.JWTImplemenation.Entities.Enum.Gender;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,4 +17,8 @@ public class RegisterRequest {
     private String lastname;
     private String email;
     private String password;
+    private String address;
+    private String phone;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 }
