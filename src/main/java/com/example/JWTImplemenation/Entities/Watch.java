@@ -24,6 +24,7 @@ public class Watch {
     private String description;
     private Integer price;
     private boolean status;
+    private boolean isPaid;
 
     @OneToOne(mappedBy = "watch", cascade = CascadeType.ALL)
     private Appraisal appraisal;

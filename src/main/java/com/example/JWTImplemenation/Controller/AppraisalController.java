@@ -26,9 +26,9 @@ public class AppraisalController {
         return appraisalService.findById(id);
     }
 
-    @PostMapping("/watch/{watchId}")
-    public ResponseEntity<AppraisalDTO> createAppraisal(@PathVariable Integer watchId, @RequestBody Appraisal appraisal) {
-        return appraisalService.save(watchId, appraisal);
+    @PostMapping("/watch")
+    public ResponseEntity<AppraisalDTO> createAppraisal(@RequestBody AppraisalDTO appraisalDTO) {
+        return appraisalService.save(appraisalDTO);
     }
 
     @PutMapping("/{id}")

@@ -24,4 +24,6 @@ public class AppraisalDTO {
     private String crystal;
     private String bracket;
     private String buckle;
+    private Integer appraiserId;
+    private Integer watchId;
 }

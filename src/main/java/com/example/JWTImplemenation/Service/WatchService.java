@@ -47,6 +47,7 @@ public class WatchService implements IWatchService {
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             watch.setStatus(true);
+            watch.setPaid(false);
             watch.setUser(user);
             Watch savedWatch = watchRepository.save(watch);
             return ResponseEntity.ok(convertToDTO(savedWatch));
@@ -111,6 +112,8 @@ public class WatchService implements IWatchService {
         watchDTO.setBrand(watch.getBrand());
         watchDTO.setDescription(watch.getDescription());
         watchDTO.setPrice(watch.getPrice());
+        watchDTO.setPaid(watch.isPaid());
+        watchDTO.setStatus(watch.isStatus());
         watchDTO.setCreatedDate(watch.getCreatedDate());
         if (watch.getImageUrl() != null) {
             List<String> imageUrls = watch.getImageUrl()
@@ -130,4 +133,15 @@ public class WatchService implements IWatchService {
     private List<WatchDTO> convertToDTOList(List<Watch> watches) {
         return watches.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
+    public void updateWatchStatus(List<Integer> watchIds, boolean status) {
+        for (Integer watchId : watchIds) {
+            Watch watch = watchRepository.findById(watchId).orElse(null);
+            if (watch != null) {
+                watch.setStatus(status);
+                watch.setPaid(true);
+                watchRepository.save(watch);
+            }
+        }
+    }
+
 }

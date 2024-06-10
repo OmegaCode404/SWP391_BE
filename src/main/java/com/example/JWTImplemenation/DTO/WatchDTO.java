@@ -14,6 +14,8 @@ public class WatchDTO {
     private String name;
     private String brand;
     private String description;
+    private boolean isPaid;
+    private boolean status;
     private Integer price;
     private Date createdDate;
     private List<String> imageUrl;
