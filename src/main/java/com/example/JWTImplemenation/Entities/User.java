@@ -1,5 +1,4 @@
 package com.example.JWTImplemenation.Entities;
-
 import com.example.JWTImplemenation.Entities.Enum.Gender;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -38,7 +37,8 @@ public class User implements UserDetails {
     private Role role;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Watch> watches;
-
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Cart cart;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
