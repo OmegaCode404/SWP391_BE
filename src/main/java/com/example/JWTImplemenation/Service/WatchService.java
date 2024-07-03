@@ -4,7 +4,7 @@ import com.example.JWTImplemenation.DTO.WatchDTO;
 import com.example.JWTImplemenation.Entities.ImageUrl;
 import com.example.JWTImplemenation.Entities.User;
 import com.example.JWTImplemenation.Entities.Watch;
-import com.example.JWTImplemenation.Repository.IRespository.WatchRespository;
+import com.example.JWTImplemenation.Repository.WatchRespository;
 import com.example.JWTImplemenation.Repository.UserRepository;
 import com.example.JWTImplemenation.Service.IService.IImageService;
 import com.example.JWTImplemenation.Service.IService.IWatchService;
@@ -80,6 +80,17 @@ public class WatchService implements IWatchService {
         }
     }
     @Override
+    public ResponseEntity<List<WatchDTO>> findByUserId(Integer userId) {
+        List<Watch> watches = watchRepository.findByUserId(userId);
+        return ResponseEntity.ok(convertToDTOList(watches));
+    }
+    @Override
+    public ResponseEntity<List<WatchDTO>> searchWatches(String name, String brand, Integer minPrice, Integer maxPrice) {
+        List<Watch> watches = watchRepository.searchWatches(name, brand, minPrice, maxPrice);
+        return ResponseEntity.ok(convertToDTOList(watches));
+    }
+
+    @Override
     public ResponseEntity<WatchDTO> addImagesToWatch(Integer watchId, List<MultipartFile> imageFiles) {
         Optional<Watch> optionalWatch = watchRepository.findById(watchId);
         if (optionalWatch.isPresent()) {
@@ -114,6 +125,8 @@ public class WatchService implements IWatchService {
         watchDTO.setPrice(watch.getPrice());
         watchDTO.setPaid(watch.isPaid());
         watchDTO.setStatus(watch.isStatus());
+        watchDTO.setSellerName(watch.getUser().getFirstName()+" "+watch.getUser().getLastName());
+        watchDTO.setCreatedDate(watch.getCreatedDate());
         watchDTO.setCreatedDate(watch.getCreatedDate());
         if (watch.getImageUrl() != null) {
             List<String> imageUrls = watch.getImageUrl()
@@ -133,15 +146,16 @@ public class WatchService implements IWatchService {
     private List<WatchDTO> convertToDTOList(List<Watch> watches) {
         return watches.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
-    public void updateWatchStatus(List<Integer> watchIds, boolean status) {
-        for (Integer watchId : watchIds) {
-            Watch watch = watchRepository.findById(watchId).orElse(null);
-            if (watch != null) {
+    @Override
+    public void updateWatchStatus(List<Integer> watchIds, boolean status, boolean isPaid) {
+        for (Integer id : watchIds) {
+            Optional<Watch> watchOptional = watchRepository.findById(id);
+            if (watchOptional.isPresent()) {
+                Watch watch = watchOptional.get();
                 watch.setStatus(status);
-                watch.setPaid(true);
+                watch.setPaid(isPaid);
                 watchRepository.save(watch);
             }
         }
     }
-
 }

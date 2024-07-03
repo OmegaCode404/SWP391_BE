@@ -6,10 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,6 +22,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "_user")
 public class User implements UserDetails {
     @Id
@@ -32,12 +36,26 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Gender gender;
     private String avatarUrl;
+    @Column(nullable = false, columnDefinition = "float default 0.0")
+    private double rating;
     private String address;
+    @CreatedDate
+    private Timestamp createdDate;
     private boolean status;
     @Enumerated(EnumType.STRING)
     private Role role;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Watch> watches;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Cart cart;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Order> orders;
+
+    @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL)
+    private List<Feedback> givenFeedback;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Feedback> appraiserFeedback;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -21,7 +21,6 @@ public class Appraisal {
     private Integer id;
     private String comments;
     private Integer value;
-    private String yearOfProduction;
     private String material;
     private String thickness;
     private String dial;

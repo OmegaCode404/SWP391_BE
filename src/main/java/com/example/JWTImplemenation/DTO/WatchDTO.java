@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 @Data
@@ -17,8 +18,9 @@ public class WatchDTO {
     private boolean isPaid;
     private boolean status;
     private Integer price;
-    private Date createdDate;
+    private Timestamp createdDate;
     private List<String> imageUrl;
     private Integer appraisalId;
     private Integer sellerId;
+    private String sellerName;
 }

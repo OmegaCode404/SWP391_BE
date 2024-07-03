@@ -5,7 +5,7 @@ import com.example.JWTImplemenation.Entities.Appraisal;
 import com.example.JWTImplemenation.Entities.User;
 import com.example.JWTImplemenation.Entities.Watch;
 import com.example.JWTImplemenation.Repository.AppraisalRepository;
-import com.example.JWTImplemenation.Repository.IRespository.WatchRespository;
+import com.example.JWTImplemenation.Repository.WatchRespository;
 import com.example.JWTImplemenation.Repository.UserRepository;
 import com.example.JWTImplemenation.Service.IService.IAppraisalService;
 import com.example.JWTImplemenation.Util.AuthUtil;
@@ -102,7 +102,7 @@ public class AppraisalService implements IAppraisalService {
                 .id(appraisal.getId())
                 .comments(appraisal.getComments())
                 .value(appraisal.getValue())
-                .yearOfProduction(appraisal.getYearOfProduction())
+
                 .material(appraisal.getMaterial())
                 .thickness(appraisal.getThickness())
                 .dial(appraisal.getDial())
@@ -123,7 +123,7 @@ public class AppraisalService implements IAppraisalService {
                 .id(appraisalDTO.getId())
                 .comments(appraisalDTO.getComments())
                 .value(appraisalDTO.getValue())
-                .yearOfProduction(appraisalDTO.getYearOfProduction())
+
                 .material(appraisalDTO.getMaterial())
                 .thickness(appraisalDTO.getThickness())
                 .dial(appraisalDTO.getDial())

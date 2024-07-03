@@ -4,7 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -12,6 +16,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table
 public class Watch {
@@ -20,7 +25,10 @@ public class Watch {
     private Integer id;
     private String name;
     private String brand;
-    private Date createdDate;
+    @CreatedDate
+    private Timestamp createdDate;
+    @LastModifiedDate
+    private Timestamp lastModifiedDate;
     private String description;
     private Integer price;
     private boolean status;
@@ -35,5 +43,11 @@ public class Watch {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+    @OneToMany(mappedBy = "watch", cascade = CascadeType.ALL)
+    private List<CartItem> cartItems;
+    @OneToMany(mappedBy = "watch", cascade = CascadeType.ALL)
+    private List<OrderItem> orderItems;
+    @OneToMany(mappedBy = "watch", cascade = CascadeType.ALL)
+    private List<Feedback> feedbacks;
 }
 
