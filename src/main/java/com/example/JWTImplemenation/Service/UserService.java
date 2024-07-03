@@ -7,6 +7,7 @@ import com.example.JWTImplemenation.Service.IService.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService implements IUserService {
+    @Autowired
+    private ImageService imageService;
 
     @Autowired
     private UserRepository userRepository;
@@ -29,10 +32,14 @@ public class UserService implements IUserService {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    public ResponseEntity<UserDTO> update(Integer id, UserDTO userDTO) {
+    public ResponseEntity<UserDTO> update(Integer id, UserDTO userDTO, MultipartFile avatarFile) {
         if (userRepository.existsById(id)) {
             userDTO.setId(id);
             User user = convertToEntity(userDTO);
+            if (avatarFile != null && !avatarFile.isEmpty()) {
+                String avatarUrl = imageService.uploadImage(avatarFile);
+                user.setAvatarUrl(avatarUrl);
+            }
             User updatedUser = userRepository.save(user);
             return ResponseEntity.ok(convertToDTO(updatedUser));
         } else {
@@ -41,8 +48,22 @@ public class UserService implements IUserService {
     }
 
     public ResponseEntity<Void> deleteById(Integer id) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setStatus(false);
+            userRepository.save(user);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    public ResponseEntity<Void> activateUser(Integer id) {
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setStatus(true);
+            userRepository.save(user);
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
@@ -57,11 +78,13 @@ public class UserService implements IUserService {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
+                .rating(user.getRating())
                 .gender(user.getGender())
                 .avatarUrl(user.getAvatarUrl())
                 .address(user.getAddress())
                 .status(user.isStatus())
                 .role(user.getRole())
+                .createdDate(user.getCreatedDate())
                 .build();
     }
 
@@ -78,6 +101,7 @@ public class UserService implements IUserService {
                 .address(userDTO.getAddress())
                 .status(userDTO.isStatus())
                 .role(userDTO.getRole())
+                .createdDate(userDTO.getCreatedDate())
                 .build();
     }
 

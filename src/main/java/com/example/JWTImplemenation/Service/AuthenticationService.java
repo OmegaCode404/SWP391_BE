@@ -30,6 +30,9 @@ public class AuthenticationService {
                 .address(request.getAddress())
                 .phone(request.getPhone())
                 .gender(request.getGender())
+                .createdDate(request.getCreatedDate())
+                .avatarUrl(request.getAvatarUrl())
+                .rating(0)
                 .status(true)
                 .password(PasswordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
@@ -84,9 +87,11 @@ public class AuthenticationService {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .gender(user.getGender())
+                .createdDate(user.getCreatedDate())
                 .avatarUrl(user.getAvatarUrl())
                 .address(user.getAddress())
                 .status(user.isStatus())
+                .rating(user.getRating())
                 .role(user.getRole())
                 .build();
     }

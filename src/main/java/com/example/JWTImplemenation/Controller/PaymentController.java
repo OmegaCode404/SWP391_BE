@@ -1,12 +1,15 @@
 package com.example.JWTImplemenation.Controller;
 
 import com.example.JWTImplemenation.Config.VNPayConfig;
-import com.example.JWTImplemenation.Entities.Watch;
-import com.example.JWTImplemenation.Repository.IRespository.WatchRespository;
+import com.example.JWTImplemenation.DTO.CartDTO;
+import com.example.JWTImplemenation.DTO.CartItemDTO;
+import com.example.JWTImplemenation.DTO.WatchDTO;
+import com.example.JWTImplemenation.Service.IService.ICartService;
 import com.example.JWTImplemenation.Service.IService.IWatchService;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
@@ -16,18 +19,21 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/payment")
 public class PaymentController {
     @Autowired
     private IWatchService watchService;
+    @Autowired
+    private ICartService cartService;
+
     @PostMapping("/create-payment-url")
     public Map<String, String> createPaymentUrl(@RequestBody Map<String, Object> payload) throws UnknownHostException, UnsupportedEncodingException {
         String vnp_IpAddr = InetAddress.getLocalHost().getHostAddress();
         int amount = (int) payload.get("amount");
         String orderInfo = (String) payload.get("orderInfo");
-
         String vnp_Version = VNPayConfig.VNPAY_VERSION;
         String vnp_Command = VNPayConfig.VNPAY_COMMAND;
         String vnp_TmnCode = VNPayConfig.VNPAY_TMNCODE;
@@ -58,7 +64,6 @@ public class PaymentController {
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
 
-
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         Collections.sort(fieldNames);
         StringBuilder hashData = new StringBuilder();
@@ -88,10 +93,18 @@ public class PaymentController {
         return response;
     }
 
-    @PostMapping("/verify-payment")
-    public Map<String, Boolean> verifyPayment(@RequestBody Map<String, String> payload) {
+    @PostMapping("/verify-payment/{id}")
+    public Map<String, Object> verifyPayment(@PathVariable Integer id, @RequestBody Map<String, String> payload) {
         String vnp_HashSecret = VNPayConfig.VNPAY_HASH_SECRET;
         String secureHash = payload.remove("vnp_SecureHash");
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (secureHash == null || secureHash.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Missing secure hash.");
+            return response;
+        }
 
         List<String> fieldNames = new ArrayList<>(payload.keySet());
         Collections.sort(fieldNames);
@@ -121,22 +134,31 @@ public class PaymentController {
         System.out.println("Calculated Hash: " + calculatedHash);
         System.out.println("Hash Data: " + hashData.toString());
 
-        Map<String, Boolean> response = new HashMap<>();
         boolean isSuccess = secureHash.equals(calculatedHash);
         response.put("success", isSuccess);
 
-//        if (isSuccess) {
-//            // Assuming the payload contains watchIds in a comma-separated string
-//            String watchIdsString = payload.get("watchIds");
-//            if (watchIdsString != null) {
-//                String[] watchIdArray = watchIdsString.split(",");
-//                List<Integer> watchIds = new ArrayList<>();
-//                for (String idStr : watchIdArray) {
-//                    watchIds.add(Integer.parseInt(idStr));
-//                }
-//                watchService.updateWatchStatus(watchIds, false);
-//            }
-//        }
+        if (isSuccess) {
+            // Retrieve cart items for the user
+            ResponseEntity<CartDTO> cartResponse = cartService.findCartByUserId(id);
+            if (cartResponse != null && cartResponse.getStatusCode().is2xxSuccessful()) {
+                List<Integer> watchIds = cartResponse.getBody().getCartItems().stream()
+                        .map(CartItemDTO::getWatch)
+                        .map(WatchDTO::getId)
+                        .collect(Collectors.toList());
+
+                // Update watch status and isPaid status
+                watchService.updateWatchStatus(watchIds, false, true);
+
+            } else {
+                // Handle error if cart retrieval fails
+                System.err.println("Failed to retrieve cart items for user: " + id);
+                response.put("success", false);
+                response.put("message", "Failed to retrieve cart items.");
+                return response;
+            }
+        } else {
+            response.put("message", "Secure hash does not match.");
+        }
 
         return response;
     }

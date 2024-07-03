@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -18,7 +20,9 @@ public class RegisterRequest {
     private String email;
     private String password;
     private String address;
+    private String avatarUrl;
     private String phone;
     @Enumerated(EnumType.STRING)
     private Gender gender;
+    public Timestamp createdDate;
 }

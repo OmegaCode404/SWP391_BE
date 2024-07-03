@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.sql.Timestamp;
 
 @Data
 @AllArgsConstructor
@@ -20,9 +23,11 @@ public class UserDTO {
     private String lastName;
     private String email;
     private String phone;
+    private double rating;
     @Enumerated(EnumType.STRING)
     private Gender gender;
     private String avatarUrl;
+    private Timestamp createdDate;
     private String address;
     private boolean status;
     @Enumerated(EnumType.STRING)

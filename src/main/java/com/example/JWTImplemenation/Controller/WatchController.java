@@ -48,4 +48,17 @@ public class WatchController {
     public ResponseEntity<WatchDTO> addImagesToWatch(@PathVariable Integer watchId, @RequestParam("imageFiles") List<MultipartFile> imageFiles) {
         return iWatchService.addImagesToWatch(watchId, imageFiles);
     }
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<WatchDTO>> getWatchesByUserId(@PathVariable Integer userId) {
+        return iWatchService.findByUserId(userId);
+    }
+    @GetMapping("/search")
+    public ResponseEntity<List<WatchDTO>> searchWatches(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) Integer minPrice,
+            @RequestParam(required = false) Integer maxPrice) {
+        return iWatchService.searchWatches(name, brand, minPrice, maxPrice);
+    }
+
 }
